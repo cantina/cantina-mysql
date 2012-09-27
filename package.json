@@ -1,0 +1,26 @@
+{
+  "name": "cantina-mysql",
+  "version": "2.0.0",
+  "private": true,
+  "description": "MySQL for Cantina applications.",
+  "main": "index.js",
+  "scripts": {
+    "test": "./node_modules/.bin/mocha -R spec"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/cantina/cantina-mysql.git"
+  },
+  "author": "Brian Link",
+  "license": "MIT",
+  "peerDependencies": {
+    "cantina": "git+ssh://git@github.com:cantina/cantina.git#2.x"
+  },
+  "dependencies": {
+    "mysql": "~2.0.0"
+  },
+  "devDependencies": {
+    "mocha": "~1.4.2",
+    "cantina": "git+ssh://git@github.com:cantina/cantina.git#2.x"
+  }
+}
