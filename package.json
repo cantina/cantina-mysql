@@ -17,7 +17,7 @@
     "cantina": "git+ssh://git@github.com:cantina/cantina.git#2.x"
   },
   "dependencies": {
-    "mysql": "~2.0.0"
+    "mysql": "git://github.com/carlos8f/node-mysql.git"
   },
   "devDependencies": {
     "mocha": "~1.4.2",
