@@ -30,7 +30,9 @@ app.on('init', function() {
     get: function () {
       if (poolCounter >= conf.pool) poolCounter = 0;
       var conn = app.mysql.connections[poolCounter++];
-      return conn.query.bind(conn);
+      var query = conn.query.bind(conn);
+      query._connection = conn;
+      return query;
     },
     enumerable: true,
   });
