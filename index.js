@@ -8,13 +8,13 @@ app.conf.add({
   }
 });
 
+app.mysql = {};
+
 app.on('init', function() {
   var conf = app.conf.get('mysql');
 
   // Set up a simple pool of connections.
-  app.mysql = {
-    connections: []
-  };
+  app.mysql.connections = [];
   for (var i = 0; i < conf.pool; i++) {
     app.mysql.connections.push(mysql.createConnection(conf));
   }
@@ -38,6 +38,7 @@ app.on('init', function() {
   });
 });
 
+// Used by the connections.
 function handleDisconnect(connection, i) {
   connection.on('error', function(err) {
     if (!err.fatal) {
@@ -56,3 +57,51 @@ function handleDisconnect(connection, i) {
     connection.connect();
   });
 }
+
+// Build select query from a nested structure.
+app.mysql.build = function (parts) {
+  // Defaults.
+  app.utils.defaults(parts, {
+    select: ['*'],
+    from: [],
+    join: [],
+    where: [],
+    group: [],
+    order: [],
+    limit: null,
+    offset: null
+  });
+
+  // Cast to arrays.
+  ['select', 'from', 'join', 'where', 'group', 'order'].forEach(function (key) {
+    if (!Array.isArray(parts[key])) {
+      parts[key] = [parts[key]];
+    }
+  });
+
+  // Create query.
+  var query = "";
+
+  query += "SELECT " + parts.select.join(', ') + "\n";
+  query += "FROM " + parts.from.join(', ') + "\n";
+  if (parts.join.length) {
+    query += parts.join.join("\n");
+  }
+  if (parts.where.length) {
+    query += "WHERE " + parts.where.join(" AND ") + "\n";
+  }
+  if (parts.group.length) {
+    query += "GROUP BY " + parts.group.join(', ') + "\n";
+  }
+  if (parts.order.length) {
+    query += "ORDER BY " + parts.order.join(', ') + "\n";
+  }
+  if (parts.limit) {
+    query += "LIMIT " + parts.limit + "\n";
+  }
+  if (parts.offset) {
+    query += "OFFSET " + parts.offset;
+  }
+
+  return query;
+};
