@@ -85,7 +85,7 @@ app.mysql.build = function (parts) {
   query += "SELECT " + parts.select.join(', ') + "\n";
   query += "FROM " + parts.from.join(', ') + "\n";
   if (parts.join.length) {
-    query += parts.join.join("\n");
+    query += parts.join.join("\n") + "\n";
   }
   if (parts.where.length) {
     query += "WHERE " + parts.where.join(" AND ") + "\n";
