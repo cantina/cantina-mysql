@@ -31,6 +31,7 @@ app.mysql.query = function () {
   conn._activeQueries++;
   app.mysql._activeQueries++;
   var query = conn.query.apply(conn, arguments);
+  query._connection = conn;
   if (!query._callback) {
     query.once('end', function () {
       conn._activeQueries--;
