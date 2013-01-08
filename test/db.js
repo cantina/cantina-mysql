@@ -41,5 +41,4 @@ describe('db', function() {
       });
     });
   });
-
 });

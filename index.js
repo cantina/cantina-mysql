@@ -10,37 +10,54 @@ app.conf.add({
 
 app.mysql = {};
 
-app.on('init', function() {
-  var conf = app.conf.get('mysql');
+var conf = app.conf.get('mysql');
 
-  // Set up a simple pool of connections.
-  app.mysql.connections = [];
-  for (var i = 0; i < conf.pool; i++) {
-    app.mysql.connections.push(mysql.createConnection(conf));
+// Set up a simple pool of connections.
+app.mysql.connections = [];
+for (var i = 0; i < conf.pool; i++) {
+  newConnection(conf);
+}
+
+app.mysql._activeQueries = 0;
+app.mysql._completeQueries = 0;
+
+app.mysql.query = function () {
+  // perform the query on the least busiest connection.
+  app.mysql.connections.sort(function (a, b) {
+    if (a._activeQueries === b._activeQueries) return 0;
+    return a._activeQueries > b._activeQueries ? 1 : -1;
+  });
+  var conn = app.mysql.connections[0];
+  conn._activeQueries++;
+  app.mysql._activeQueries++;
+  var query = conn.query.apply(conn, arguments);
+  if (!query._callback) {
+    query.once('end', function () {
+      conn._activeQueries--;
+      app.mysql._activeQueries--;
+      conn._completeQueries++;
+      app.mysql._completeQueries++;
+    });
   }
-  app.mysql.connections.forEach(function(connection, i) {
-    handleDisconnect(connection, i);
-    connection.connect();
-  });
+  else {
+    var cb = query._callback;
+    query._callback = function () {
+      conn._activeQueries--;
+      app.mysql._activeQueries--;
+      conn._completeQueries++;
+      app.mysql._completeQueries++;
+      cb.apply(query, arguments);
+    };
+  }
+  return query;
+};
 
-  // Expose app.mysql.query, which naively provides a round-robin'ed connection
-  // query function.
-  var poolCounter = 0;
-  Object.defineProperty(app.mysql, 'query', {
-    get: function () {
-      if (poolCounter >= conf.pool) poolCounter = 0;
-      var conn = app.mysql.connections[poolCounter++];
-      var query = conn.query.bind(conn);
-      query._connection = conn;
-      return query;
-    },
-    enumerable: true,
-  });
-});
-
-// Used by the connections.
-function handleDisconnect(connection, i) {
-  connection.on('error', function(err) {
+// Create a new connection
+function newConnection (config) {
+  var conn = mysql.createConnection(config);
+  conn._activeQueries = 0;
+  conn._completeQueries = 0;
+  conn.on('error', function (err) {
     if (!err.fatal) {
       return;
     }
@@ -51,11 +68,16 @@ function handleDisconnect(connection, i) {
       app.emit('error', err);
     }
 
-    connection = mysql.createConnection(connection.config);
-    app.mysql.connections.splice(i, 1, connection);
-    handleDisconnect(connection, i);
-    connection.connect();
+    for (var idx in app.mysql.connections) {
+      if (app.mysql.connections[idx] === conn) {
+        app.mysql.connections.splice(idx, 1);
+        newConnection(conn.config);
+        break;
+      }
+    }
   });
+  conn.connect();
+  app.mysql.connections.push(conn);
 }
 
 // Build select query from a nested structure.
