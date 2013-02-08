@@ -13,9 +13,6 @@
   },
   "author": "Brian Link",
   "license": "MIT",
-  "peerDependencies": {
-    "cantina": "git+ssh://git@github.com:cantina/cantina.git#2.x"
-  },
   "dependencies": {
     "mysql": "git://github.com/carlos8f/node-mysql.git"
   },
