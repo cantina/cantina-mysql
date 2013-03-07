@@ -14,7 +14,7 @@
   "author": "Brian Link",
   "license": "MIT",
   "dependencies": {
-    "mysql": "git://github.com/carlos8f/node-mysql.git"
+    "mysql": "git://github.com/carlos8f/node-mysql.git#speed"
   },
   "devDependencies": {
     "mocha": "~1.4.2",
