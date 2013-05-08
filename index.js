@@ -28,6 +28,12 @@ app.mysql.query = function () {
     return a._activeQueries > b._activeQueries ? 1 : -1;
   });
   var conn = app.mysql.connections[0];
+  if (!conn) {
+    // connections in pool may have all been shut down.
+    // make a new one so we can continue.
+    newConnection(conf);
+    conn = app.mysql.connections[0];
+  }
   conn._activeQueries++;
   app.mysql._activeQueries++;
   var query = conn.query.apply(conn, arguments);
