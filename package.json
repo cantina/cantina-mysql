@@ -1,6 +1,6 @@
 {
   "name": "cantina-mysql",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "private": true,
   "description": "MySQL for Cantina applications.",
   "main": "index.js",
