@@ -5,18 +5,16 @@ describe('pool', function () {
 
   before(function(done) {
     app = require('cantina');
-    app.load(done);
+    app.boot(function (err) {
+      assert.ifError(err);
+      app.conf.set('mysql:pool', 3);
+      require('../');
+      done();
+    });
   });
 
-  before(function (done) {
-    app.conf.set('mysql:pool', 3);
-    require('../');
-    app.init(done);
-  });
-
-  after(function() {
-    delete require.cache[require.resolve('cantina')];
-    delete require.cache[require.resolve('../')];
+  after(function(done) {
+    app.destroy(done);
   });
 
   it('initialized ok', function () {

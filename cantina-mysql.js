@@ -1,6 +1,15 @@
-var app = require('cantina'),
-    mysql = require('mysql');
+var app = require('cantina')
+  , mysql = require('mysql')
+  , _ = require('underscore')
+  , conf;
 
+app.mysql = {
+  connections: [],
+  _activeQueries: 0,
+  _completeQueries: 0
+};
+
+// Default conf.
 app.conf.add({
   mysql: {
     user: 'root',
@@ -8,26 +17,25 @@ app.conf.add({
   }
 });
 
-app.mysql = {};
-
-var conf = app.conf.get('mysql');
+// Get conf.
+conf = app.conf.get('mysql');
 
 // Set up a simple pool of connections.
-app.mysql.connections = [];
 for (var i = 0; i < conf.pool; i++) {
   newConnection(conf);
 }
 
-app.mysql._activeQueries = 0;
-app.mysql._completeQueries = 0;
-
+// Provide a balanced, pooled query method.
 app.mysql.query = function () {
-  // perform the query on the least busiest connection.
+  var conn, query, cb;
+
+  // Perform the query on the least busiest connection.
   app.mysql.connections.sort(function (a, b) {
     if (a._activeQueries === b._activeQueries) return 0;
     return a._activeQueries > b._activeQueries ? 1 : -1;
   });
-  var conn = app.mysql.connections[0];
+
+  conn = app.mysql.connections[0];
   if (!conn) {
     // connections in pool may have all been shut down.
     // make a new one so we can continue.
@@ -36,7 +44,8 @@ app.mysql.query = function () {
   }
   conn._activeQueries++;
   app.mysql._activeQueries++;
-  var query = conn.query.apply(conn, arguments);
+
+  query = conn.query.apply(conn, arguments);
   query._connection = conn;
   if (!query._callback) {
     query.once('end', function () {
@@ -47,7 +56,7 @@ app.mysql.query = function () {
     });
   }
   else {
-    var cb = query._callback;
+    cb = query._callback;
     query._callback = function () {
       conn._activeQueries--;
       app.mysql._activeQueries--;
@@ -56,6 +65,7 @@ app.mysql.query = function () {
       cb.apply(query, arguments);
     };
   }
+
   return query;
 };
 
@@ -89,8 +99,9 @@ function newConnection (config) {
 
 // Build select query from a nested structure.
 app.mysql.build = function (parts) {
-  // Defaults.
-  app.utils.defaults(parts, {
+  var query = '';
+
+  parts = _.defaults(parts, {
     select: ['*'],
     from: [],
     join: [],
@@ -108,28 +119,25 @@ app.mysql.build = function (parts) {
     }
   });
 
-  // Create query.
-  var query = "";
-
-  query += "SELECT " + parts.select.join(', ') + "\n";
-  query += "FROM " + parts.from.join(', ') + "\n";
+  query += 'SELECT ' + parts.select.join(', ') + '\n';
+  query += 'FROM ' + parts.from.join(', ') + '\n';
   if (parts.join.length) {
-    query += parts.join.join("\n") + "\n";
+    query += parts.join.join('\n') + '\n';
   }
   if (parts.where.length) {
-    query += "WHERE " + parts.where.join(" AND ") + "\n";
+    query += 'WHERE ' + parts.where.join(' AND ') + '\n';
   }
   if (parts.group.length) {
-    query += "GROUP BY " + parts.group.join(', ') + "\n";
+    query += 'GROUP BY ' + parts.group.join(', ') + '\n';
   }
   if (parts.order.length) {
-    query += "ORDER BY " + parts.order.join(', ') + "\n";
+    query += 'ORDER BY ' + parts.order.join(', ') + '\n';
   }
   if (parts.limit) {
-    query += "LIMIT " + parts.limit + "\n";
+    query += 'LIMIT ' + parts.limit + '\n';
   }
   if (parts.offset) {
-    query += "OFFSET " + parts.offset;
+    query += 'OFFSET ' + parts.offset;
   }
 
   return query;
