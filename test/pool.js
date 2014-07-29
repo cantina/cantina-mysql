@@ -4,11 +4,11 @@ describe('pool', function () {
   var app;
 
   before(function(done) {
-    app = require('cantina');
+    app = require('cantina').createApp();
     app.boot(function (err) {
       assert.ifError(err);
       app.conf.set('mysql:pool', 3);
-      require('../');
+      app.require('../');
       done();
     });
   });

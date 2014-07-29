@@ -4,7 +4,7 @@ describe('db', function() {
   var app;
 
   beforeEach(function(done) {
-    app = require('cantina');
+    app = require('cantina').createApp();
     app.boot(done);
   });
 
@@ -13,7 +13,7 @@ describe('db', function() {
   });
 
   it('Can connect to a database', function(done) {
-    require('../');
+    app.require('../');
     app.mysql.query("SHOW STATUS", function(err, results) {
       assert.ifError(err);
       done();
@@ -22,7 +22,7 @@ describe('db', function() {
 
   it('Can handle a disconnected connection', function(done) {
     app.conf.set('mysql:pool', 1);
-    require('../');
+    app.require('../');
 
     var connErr = new Error('Boom');
     connErr.code = 'PROTOCOL_CONNECTION_LOST';
