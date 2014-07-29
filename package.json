@@ -1,6 +1,6 @@
 {
   "name": "cantina-mysql",
-  "version": "4.0.0-dev",
+  "version": "4.1.0",
   "publishConfig": {
     "registry": "https://npm-registry.terraeclipse.com"
   },
@@ -19,10 +19,10 @@
     "underscore": "~1.6.0"
   },
   "peerDependencies": {
-    "cantina" : "~4.1.0"
+    "cantina": "~4.1.0"
   },
   "devDependencies": {
     "mocha": "*",
-    "cantina" : "~4.1.0"
+    "cantina": "~4.1.0"
   }
 }
