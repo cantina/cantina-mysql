@@ -1,9 +1,6 @@
 {
   "name": "cantina-mysql",
   "version": "4.1.0",
-  "publishConfig": {
-    "registry": "https://npm-registry.terraeclipse.com"
-  },
   "description": "MySQL for Cantina applications.",
   "main": "cantina-mysql.js",
   "scripts": {
@@ -13,6 +10,12 @@
     "type": "git",
     "url": "git://github.com/cantina/cantina-mysql.git"
   },
+  "licenses": [
+    {
+      "type": "Apache-2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    }
+  ],
   "author": "Brian Link",
   "dependencies": {
     "mysql": "git://github.com/carlos8f/node-mysql.git#speed",
